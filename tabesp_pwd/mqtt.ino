@@ -5,8 +5,15 @@ void setupMqtt() {
   mqtt.onConnect(onMqttConnect);
   mqtt.onMessage(onMqttMessage);
   mqtt.setServer(mqttServer, mqttPort);
+  mqtt.setKeepAlive(60);
   mqtt.connect();
+}
 
+void handleMqtt(){
+  if(mqtt.connected()) return;
+
+  DEBUG_LN("Reconnecting to MQTT");
+  setupMqtt();
 }
 
 void onMqttConnect(bool sessionPresent) {

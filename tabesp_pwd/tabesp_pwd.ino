@@ -30,9 +30,9 @@ char mqttServer[65] = "192.168.1.202";                     //both domains and IP
 uint16_t mqttPort = 1883;
 char mqttUser[65] = "";                       //optional: username for MQTT auth
 char mqttPass[33] = "";                       //optional: password for MQTT auth
-char mqttTopic[65] = "esp/pwd/3";
+char mqttTopic[65] = "esp/pwd/4";
 
-#define VERSION "0.5"
+#define VERSION "0.6"
 
 // 12 13 14 - rgb
 // 4 5
@@ -60,11 +60,17 @@ void setup() {
   DEBUG_LN("Boot DONE");
 }
 
-unsigned long debugTime = 0;
+unsigned long loopTime = 0;
+unsigned long checkPeriod = 9999;
 
-//main program loop
 void loop() {
 
+  if (millis() - loopTime > checkPeriod) {
+    handleWiFi();
+    handleMqtt();
+    loopTime = millis();
+  }
+  
   yield();
 }
 

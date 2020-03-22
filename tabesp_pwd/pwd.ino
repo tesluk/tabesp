@@ -44,7 +44,7 @@ void setColor(int pin, CRGB rgb) {
   DEBUG("Setting color: ");
   DEBUG(" "); DEBUG(rgb.red); DEBUG(" - "); DEBUG(gamma8[rgb.red]);
   DEBUG(" "); DEBUG(rgb.green); DEBUG(" - "); DEBUG(gamma8[rgb.green]);
-  DEBUG(" "); DEBUG_LN(rgb.blue); DEBUG(" - "); DEBUG(gamma8[rgb.blue]);
+  DEBUG(" "); DEBUG(rgb.blue); DEBUG(" - "); DEBUG_LN(gamma8[rgb.blue]);
 
   setPWM(pin, gamma8[rgb.red]);
   setPWM((pin + 1) % 16,  gamma8[rgb.green]);
