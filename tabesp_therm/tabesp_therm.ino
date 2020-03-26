@@ -25,11 +25,11 @@ AsyncMqttClient mqtt;
 char clientSSID[33] = "AdminNetwork";
 char clientPass[65] = "basata2216";
 
-char mqttServer[65] = "192.168.1.200";                     //both domains and IPs should work (no SSL)
+char mqttServer[65] = "192.168.1.202";                     //both domains and IPs should work (no SSL)
 uint16_t mqttPort = 1883;
 char mqttUser[65] = "";                       //optional: username for MQTT auth
 char mqttPass[33] = "";                       //optional: password for MQTT auth
-char mqttTopic[65] = "tabesp/therm/aaa";
+char mqttTopic[65] = "esp/therm/aaa";
 
 #define VERSION "0.6"
 
@@ -87,22 +87,12 @@ unsigned long checkPeriod = 9999;
 void loop() {
 
   if (millis() - loopTime > checkPeriod) {
-
+    handleWiFi();
+    handleMqtt();
     handleThermostat();
     
     loopTime = millis();
   }
-
-  //  for (uint16_t i = 0; i < 4096; i += 32) {
-  //    if(i % 256 == 0){
-  //      DEBUG(':');
-  //    }
-  //    for (uint8_t pwmnum = 0; pwmnum < 16; pwmnum++) {
-  //      pwm.setPWM(pwmnum, 0, (i + (4096 / 16)*pwmnum) % 4096 );
-  //    }
-  //    yield();
-  //  }
-
 
   yield();
 }

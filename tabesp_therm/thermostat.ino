@@ -26,9 +26,21 @@ void setRelay(uint8_t pin, bool state) {
   }
 }
 
+bool postToMqtt = true;
+unsigned long prevPostPeriod = 0;
+unsigned long tempPostPeriod = 3 * 9999;
+
 void handleThermostat() {
   sensors.requestTemperatures();
   numberOfDevices = sensors.getDeviceCount();
+
+  if (millis() - prevPostPeriod > tempPostPeriod) {
+    DEBUG_LN("Update MQTT");
+    postToMqtt = true;
+    prevPostPeriod = millis();
+  } else {
+    postToMqtt = false;
+  }
 
   for (int i = 0; i < numberOfDevices; i++) {
     // Search the wire for address
@@ -38,16 +50,10 @@ void handleThermostat() {
       parseAddress(tempDeviceAddress, addrBuf);
       DEBUG("Temp: "); DEBUG(addrBuf); DEBUG(" C: "); DEBUG_LN(tempC);
 
-      // update MQTT topic
-      char topicBuf[50];
-      strcpy(topicBuf, mqttTopic);
-      strcat(topicBuf, "/temp");
-      char tBuf[15];
-      char msgBuf[200];
-      dtostrf(tempC, 7, 3, tBuf);
-      itoa(tempC, tBuf, 10);
-      strcpy(msgBuf, "Temp: "); strcat(msgBuf, tBuf);
-      mqtt.publish(topicBuf, 0, true, msgBuf);
+      // update MQTT topic for each sensor
+      if (postToMqtt) {
+        mqttPostSensor(addrBuf, tempC);
+      }
 
       DEBUG("Compare "); DEBUG(aSensorAddr); DEBUG(" and "); DEBUG_LN(addrBuf);
       if (strstr(addrBuf, aSensorAddr)) {
@@ -68,19 +74,19 @@ void hadleRelay(char relayCode, uint8_t xPin, char xMode, bool xRelayState, int 
     updateRelay(relayCode, xPin, false);
   }
   if (xMode == 'A') {
-    DEBUG("Im here");
+    DEBUG_LN("Im here");
     if ((currTemp < xTTarget - xTRange)) {
       updateRelay(relayCode, xPin, true);
     }
     if ((currTemp > xTTarget + xTRange)) {
       updateRelay(relayCode, xPin, false);
     }
-//    if ((currTemp < xTTarget - xTRange) && !xRelayState) {
-//      updateRelay(relayCode, xPin, true);
-//    }
-//    if ((currTemp > xTTarget + xTRange) && xRelayState) {
-//      updateRelay(relayCode, xPin, false);
-//    }
+    //    if ((currTemp < xTTarget - xTRange) && !xRelayState) {
+    //      updateRelay(relayCode, xPin, true);
+    //    }
+    //    if ((currTemp > xTTarget + xTRange) && xRelayState) {
+    //      updateRelay(relayCode, xPin, false);
+    //    }
   }
 }
 
