@@ -1,8 +1,9 @@
 void setupWiFi() {
   WiFi.begin(clientSSID, clientPass);
-  DEBUG("Connecting to WiFi .. "); DEBUG(clientSSID);
+  DEBUG_LN("Connecting to WiFi .. "); 
+  DEBUG(clientSSID); DEBUG("  "); DEBUG_LN(clientPass);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
+    delay(2000);
     DEBUG(" .");
   }
   DEBUG_LN(" Connected to the WiFi");

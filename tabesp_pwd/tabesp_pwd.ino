@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 #include <EEPROM.h>
+
 #include "src/dependencies/async-mqtt-client/AsyncMqttClient.h"
 
 ////// PWD + Buttons
@@ -21,28 +22,22 @@
 #endif
 
 AsyncMqttClient mqtt;
+//MQTTClient mqtt;
 
 //WiFi CONFIG (all these can be changed via web UI, no need to set them here)
-char clientSSID[33] = "AdminNetwork";
-char clientPass[65] = "basata2216";
+char clientSSID[33] = "ssid";
+char clientPass[65] = "pass";
 
-char mqttServer[65] = "192.168.1.202";                     //both domains and IPs should work (no SSL)
+char mqttServer[65] = "192.168.50.210";                     //both domains and IPs should work (no SSL)
 uint16_t mqttPort = 1883;
 char mqttUser[65] = "";                       //optional: username for MQTT auth
 char mqttPass[33] = "";                       //optional: password for MQTT auth
-char mqttTopic[65] = "esp/pwd/4";
+char mqttTopic[65] = "esp/pwd/1";
 
-#define VERSION "0.6"
-
-// 12 13 14 - rgb
-// 4 5
-// 2 - WLED, on board led?
-// 15 - could not start
-
+#define VERSION "0.8.0"
 
 ////// PWD + Buttons
 CRGB color = CRGB::Black;
-bool colorState = false;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 //////
@@ -63,6 +58,9 @@ void setup() {
 unsigned long loopTime = 0;
 unsigned long checkPeriod = 9999;
 
+unsigned long stepTime = 0;
+unsigned long stepPeriod = 50;
+
 void loop() {
 
   if (millis() - loopTime > checkPeriod) {
@@ -70,7 +68,12 @@ void loop() {
     handleMqtt();
     loopTime = millis();
   }
-  
+
+  if (millis() - stepTime > stepPeriod) {
+    stepTime = millis();
+    handlePWD();
+    handleGpio();
+  }
   yield();
 }
 

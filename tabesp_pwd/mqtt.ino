@@ -1,7 +1,4 @@
 void setupMqtt() {
-
-  DEBUG("Connecting to mqtt on "); DEBUG_LN(mqttServer);
-
   mqtt.onConnect(onMqttConnect);
   mqtt.onMessage(onMqttMessage);
   mqtt.setServer(mqttServer, mqttPort);
@@ -9,30 +6,25 @@ void setupMqtt() {
   mqtt.connect();
 }
 
-void handleMqtt(){
-  if(mqtt.connected()) return;
-
+void handleMqtt() {
+  if (mqtt.connected()) return;
   DEBUG_LN("Reconnecting to MQTT");
   setupMqtt();
 }
+
 
 void onMqttConnect(bool sessionPresent) {
   DEBUG_LN("Connected to MQTT.");
   DEBUG("Session present: "); DEBUG_LN(sessionPresent);
 
   char topicBuf[50];
-  strcpy(topicBuf, mqttTopic);
-  strcat(topicBuf, "/color/+/set");
-  uint16_t packetIdSub = mqtt.subscribe(topicBuf, 2);
-  DEBUG("Subscribed ");  DEBUG_LN(packetIdSub);
+  subscribe("/color/+/set");
+  subscribe("/relay/+/set");
+  subscribe("/pin/+/set");
 
-  strcpy(topicBuf, mqttTopic);
-  strcat(topicBuf, "/pin/+/set");
-  packetIdSub = mqtt.subscribe(topicBuf, 2);
-
-//  strcpy(topicBuf, mqttTopic);
-//  strcat(topicBuf, "/config/#");
-//  packetIdSub = mqtt.subscribe(topicBuf, 2);
+  subscribe("/gcolor/set");
+  subscribe("/grelay/+/set");
+  subscribe("/gpin/+/set");
 
   strcpy(topicBuf, mqttTopic);
   strcat(topicBuf, "/config");
@@ -42,15 +34,27 @@ void onMqttConnect(bool sessionPresent) {
 
   strcpy(topicBuf, mqttTopic);
   strcat(topicBuf, "/info");
-  mqtt.publish(topicBuf, 0, true, VERSION);
+  char infoBuf[100];
+  buildInfoBody(infoBuf);
+  mqtt.publish(topicBuf, 0, true, infoBuf);
 }
 
-void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
-  DEBUG_LN("Publish received.");
-  DEBUG("  topic: ");  DEBUG_LN(topic);
-  DEBUG("  qos: ");  DEBUG(properties.qos); DEBUG("  dup: ");  DEBUG(properties.dup); DEBUG("  retain: ");  DEBUG_LN(properties.retain);
-  DEBUG("  len: "); DEBUG(len); DEBUG("  index: ");  DEBUG(index);  DEBUG("  total: ");  DEBUG_LN(total);
+void subscribe(char* topic) {
+  char topicBuf[50];
+  strcpy(topicBuf, mqttTopic);
+  strcat(topicBuf, topic);
+  uint16_t packetIdSub = mqtt.subscribe(topicBuf, 0);
+  DEBUG("Subscribed ");  DEBUG_LN(topicBuf);
+}
 
+
+void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
+  DEBUG("  topic: ");  DEBUG_LN(topic);
+
+  char lPayload[7];
+  memcpy(lPayload, payload, len);
+
+  lPayload[len] = 0;
 
   if (len == 0) {
     if (strstr(topic, "/config/restart")) {
@@ -62,38 +66,74 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     return;
   }
 
-  payload[len] = 0;
-  DEBUG_LN(payload);
-  // PIN // /pin/X/set   0-F (0-15)
-  if (strstr(topic, "/pin") && strstr(topic, "/set")) {
-    char* tmp = topic + strlen(mqttTopic) + 5;
-    //    char* num = strtok(tmp, "/") + 4;
-    tmp[1] = 0;
-    DEBUG_LN(tmp);
-    int pinN = strtol(tmp, NULL, 16);
-    uint16_t val = strtoul(payload, NULL, 10);
+  // PCA
 
-    setPWM(pinN, val);
+  // /color/X/set   0-F (0-15)
+  if (strstr(topic, "/color")) {
+    int pinN = hexToInt(topic[strlen(mqttTopic) + 7]);
+    DEBUG_LN(pinN);
+
+    CRGB colorTmp = colorFromHex(lPayload);
+    setColorTarget(pinN, colorTmp);
+    return;
   }
 
-  // RGB LED // /color/X/set
-  if (strstr(topic, "/color") && strstr(topic, "/set")) {
-    char* tmp = topic + strlen(mqttTopic) + 7;
-    tmp[1] = 0;
-    DEBUG_LN(tmp);
-    int pinN = strtol(tmp, NULL, 16);
+  // /relay/X/set   0-F (0-15)
+  if (strstr(topic, "/relay")) {
+    int pinN = hexToInt(topic[strlen(mqttTopic) + 7]);
+    DEBUG_LN(pinN);
 
-    CRGB colorTmp = colorFromHex(payload);
-    setColor(pinN, colorTmp);
+    bool val = true;
+    if ((len == 1 && lPayload[0] == '0') || (len == 3 && lPayload[0] == 'O' && lPayload[1] == 'F' && lPayload[2] == 'F')) {
+      val = false;
+    }
+
+    setRelayTarget(pinN, val);
+    return;
   }
 
-  // CONFIG
-  //  if (strstr(topic, "/config/get")) {
-  //    strcpy(topicBuf, mqttTopic);
-  //    strcat(topicBuf, "/config/msg");
-  //    mqtt.publish(topicBuf, 0, true, testMsg);
-  //  }
+  // /pin/X/set   0-F (0-15)
+  if (strstr(topic, "/pin")) {
+    int pinN = hexToInt(topic[strlen(mqttTopic) + 5]);
+    DEBUG_LN(pinN);
+
+    uint16_t val = strtoul(lPayload, NULL, 10);
+    setPWMTarget(pinN, val);
+    return;
+  }
 
 
+  // GPIO
+
+  // /gcolor/set
+  if (strstr(topic, "/gcolor")) {
+    CRGB colorTmp = colorFromHex(lPayload);
+    setGColorTarget(colorTmp);
+    return;
+  }
+
+  // /grelay/X/set   0-2
+  if (strstr(topic, "/grelay")) {
+    int pinN = hexToInt(topic[strlen(mqttTopic) + 7]);
+    DEBUG_LN(pinN);
+
+    bool val = true;
+    if ((len == 1 && lPayload[0] == '0') || (len == 3 && lPayload[0] == 'O' && lPayload[1] == 'F' && lPayload[2] == 'F')) {
+      val = false;
+    }
+
+    setGRelayTarget(pinN, val);
+    return;
+  }
+
+  // /gpin/X/set   0-2
+  if (strstr(topic, "/gpin")) {
+    int pinN = hexToInt(topic[strlen(mqttTopic) + 6]);
+    DEBUG_LN(pinN);
+
+    uint16_t val = strtoul(lPayload, NULL, 10);
+    setGpioTarget(pinN, val);
+    return;
+  }
 
 }

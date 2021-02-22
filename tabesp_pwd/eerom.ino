@@ -9,10 +9,10 @@ void setupConfig() {
   int eepVer = EEPROM.read(234); // config version
   DEBUG("Config version: "); DEBUG_LN(eepVer);
 
-  if (EEPROM.read(233) != 233) //set no first boot flag
+  if (EEPROM.read(233) != 234) //set no first boot flag
   {
     clearEEPROM();
-    EEPROM.write(233, 233);
+    EEPROM.write(233, 234);
 
     DEBUG_LN("First boot. Save config");
     saveClientSSID();
