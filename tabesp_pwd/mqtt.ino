@@ -73,7 +73,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
     int pinN = hexToInt(topic[strlen(mqttTopic) + 7]);
     DEBUG_LN(pinN);
 
-    CRGB colorTmp = colorFromHex(lPayload);
+    RGB colorTmp = colorFromHex(lPayload);
     setColorTarget(pinN, colorTmp);
     return;
   }
@@ -107,7 +107,7 @@ void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties 
 
   // /gcolor/set
   if (strstr(topic, "/gcolor")) {
-    CRGB colorTmp = colorFromHex(lPayload);
+    RGB colorTmp = colorFromHex(lPayload);
     setGColorTarget(colorTmp);
     return;
   }

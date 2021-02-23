@@ -17,9 +17,9 @@ const uint8_t gamma8[] = {
   215, 218, 220, 223, 225, 228, 231, 233, 236, 239, 241, 244, 247, 249, 252, 255
 };
 
-CRGB colorFromHex(char* in)
+RGB colorFromHex(char* in)
 {
-  if (in[0] == 0) return CRGB::White;
+  if (in[0] == 0) return {0, 0, 0};
   char first = in[0];
   uint32_t c = 0;
 
@@ -31,7 +31,7 @@ CRGB colorFromHex(char* in)
     c = strtoul(in, NULL, 10);
   }
 
-  return CRGB((c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF );
+  return { (c >> 16) & 0xFF, (c >> 8) & 0xFF, c & 0xFF };
 }
 
 

@@ -4,8 +4,9 @@
 
 #include "src/dependencies/async-mqtt-client/AsyncMqttClient.h"
 
+#include "structure.h"
+
 ////// PWD + Buttons
-#include <FastLED.h>
 #include <Wire.h>
 #include <Adafruit_PWMServoDriver.h>
 //////
@@ -34,10 +35,11 @@ char mqttUser[65] = "";                       //optional: username for MQTT auth
 char mqttPass[33] = "";                       //optional: password for MQTT auth
 char mqttTopic[65] = "esp/pwd/1";
 
-#define VERSION "0.8.0"
+#define VERSION "0.8.1"
+
 
 ////// PWD + Buttons
-CRGB color = CRGB::Black;
+//CRGB color = CRGB::Black;
 
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 //////

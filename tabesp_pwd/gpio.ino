@@ -67,7 +67,7 @@ void setGpioTarget(int pin, uint16_t value) {
 }
 
 
-void setGColorTarget(CRGB rgb) {
+void setGColorTarget(RGB rgb) {
   DEBUG("Setting color: ");
   DEBUG(" "); DEBUG(rgb.red); DEBUG(" - "); DEBUG(gamma8[rgb.red]);
   DEBUG(" "); DEBUG(rgb.green); DEBUG(" - "); DEBUG(gamma8[rgb.green]);

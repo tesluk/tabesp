@@ -26,7 +26,7 @@ void setPWMTarget(int pin, uint16_t value) {
 }
 
 // pwm on 3 pins
-void setColorTarget(int pin, CRGB rgb) {
+void setColorTarget(int pin, RGB rgb) {
   DEBUG("Setting color: ");
   DEBUG(" "); DEBUG(rgb.red); DEBUG(" - "); DEBUG(gamma8[rgb.red]);
   DEBUG(" "); DEBUG(rgb.green); DEBUG(" - "); DEBUG(gamma8[rgb.green]);
