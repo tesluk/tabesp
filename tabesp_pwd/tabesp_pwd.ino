@@ -33,9 +33,9 @@ char mqttServer[65] = "192.168.50.210";                     //both domains and I
 uint16_t mqttPort = 1883;
 char mqttUser[65] = "";                       //optional: username for MQTT auth
 char mqttPass[33] = "";                       //optional: password for MQTT auth
-char mqttTopic[65] = "esp/pwd/1";
+char mqttTopic[65] = "esp/pwd/5";
 
-#define VERSION "0.8.1"
+#define VERSION "0.8.2"
 
 
 ////// PWD + Buttons
@@ -61,7 +61,7 @@ unsigned long loopTime = 0;
 unsigned long checkPeriod = 9999;
 
 unsigned long stepTime = 0;
-unsigned long stepPeriod = 50;
+unsigned long stepPeriod = 10;
 
 void loop() {
 
@@ -76,6 +76,7 @@ void loop() {
     handlePWD();
     handleGpio();
   }
+  
   yield();
 }
 

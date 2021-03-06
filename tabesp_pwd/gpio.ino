@@ -8,7 +8,7 @@ uint16_t gpioState[3] = {0, 0, 0};
 uint16_t gpioTarget[3] = {0, 0, 0};
 bool relayGpio[3] = {false, false, false};
 
-uint16_t gpioStep = 15;
+uint16_t gpioStep = 5;
 
 void setGpioPWM(int pin, uint16_t value) {
   uint16_t tmpVal = value * 4;

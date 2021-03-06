@@ -51,7 +51,7 @@ void setRelayTarget(int pin, bool state) {
 
 
 
-uint16_t pwdStep = 15;
+uint16_t pwdStep = 5;
 
 void handlePWD() {
   for (int i = 0; i < 16; i++) {
