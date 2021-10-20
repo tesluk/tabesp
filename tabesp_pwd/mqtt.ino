@@ -3,6 +3,12 @@ void setupMqtt() {
   mqtt.onMessage(onMqttMessage);
   mqtt.setServer(mqttServer, mqttPort);
   mqtt.setKeepAlive(60);
+
+  char topicBuf[50];
+  strcpy(topicBuf, mqttTopic);
+  strcat(topicBuf, "/LWT");
+  mqtt.setWill(topicBuf, 1, true, "OFFLINE");
+
   mqtt.connect();
 }
 
@@ -37,19 +43,25 @@ void onMqttConnect(bool sessionPresent) {
   char infoBuf[100];
   buildInfoBody(infoBuf);
   mqtt.publish(topicBuf, 0, true, infoBuf);
+
+  strcpy(topicBuf, mqttTopic);
+  strcat(topicBuf, "/LWT");
+  mqtt.publish(topicBuf, 1, true, "ONLINE");
 }
 
 void subscribe(char* topic) {
   char topicBuf[50];
   strcpy(topicBuf, mqttTopic);
   strcat(topicBuf, topic);
-  uint16_t packetIdSub = mqtt.subscribe(topicBuf, 0);
+  uint16_t packetIdSub = mqtt.subscribe(topicBuf, 1);
   DEBUG("Subscribed ");  DEBUG_LN(topicBuf);
 }
 
 
 void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t len, size_t index, size_t total) {
   DEBUG("  topic: ");  DEBUG_LN(topic);
+
+  DEBUG_LN(properties.qos);
 
   char lPayload[7];
   memcpy(lPayload, payload, len);

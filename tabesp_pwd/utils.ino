@@ -48,6 +48,16 @@ void buildInfoBody(char* buf) {
   strcat(buf, "id"); strcat(buf, "="); strcat(buf, mac1); strcat(buf, mac2); strcat(buf, "\n");
 }
 
+void buildMqttTopic(char* buf) {
+  uint8_t mac[6];
+  WiFi.macAddress(mac);
+    char mac1 [4];
+  ltoa(mac[4], mac1, 16);
+  char mac2 [4];
+  ltoa(mac[5], mac2, 16);
+  strcpy(buf, "esp/pwd/"); strcat(buf, mac1); strcat(buf, mac2);
+}
+
 int hexToInt(char val) {
   if (val >= '0' && val <= '9') {
     return val - '0';

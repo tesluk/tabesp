@@ -33,9 +33,9 @@ char mqttServer[65] = "192.168.50.210";                     //both domains and I
 uint16_t mqttPort = 1883;
 char mqttUser[65] = "";                       //optional: username for MQTT auth
 char mqttPass[33] = "";                       //optional: password for MQTT auth
-char mqttTopic[65] = "esp/pwd/5";
+char mqttTopic[65] = "esp/pwd/x";
 
-#define VERSION "0.8.2"
+#define VERSION "0.8.3"
 
 
 ////// PWD + Buttons
@@ -52,6 +52,8 @@ void setup() {
   setupConfig();
   setupPWD();
   setupWiFi();
+
+  buildMqttTopic(mqttTopic);
   setupMqtt();
 
   DEBUG_LN("Boot DONE");
